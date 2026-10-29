@@ -1,30 +1,81 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Copyright 2023 Alberto Carollo -->
+<!-- Copyright 2023 Alberto Carollo
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
-  <data>
-    <template id="assets_frontend" inherit_id="website.assets_frontend">
-      <xpath expr="script[last()]" position="after">
-          <script
-              type="text/javascript"
-              src="/l10n_it_website_sale_checkout_b2x/static/src/js/l10n_it_website_sale_checkout_b2x.js"
-          />
-      </xpath>
-  </template>
-
     <template id="address" inherit_id="website_sale.address">
-      <xpath expr="//div[@id='div_phone']" position="after">
-        <t t-if="mode[1] == 'billing'">
-          <div id="b2x_checkbox" class="checkbox form-group col-lg-12">
-            <label>
-              <input type="checkbox" 
-                     class="mr8" 
-                     name="company_type"                      
-                     t-att-checked="'company_type' in checkout and checkout['company_type']"/>
-I'm a Company
-            </label>
-          </div>
-        </t>
-      </xpath>
+        <xpath expr="//div[@id='div_phone']" position="after">
+            <!-- Same condition used by website_sale to show Company Name and VAT -->
+            <t
+                t-if="mode == ('new', 'billing') or (mode == ('edit', 'billing') and (can_edit_vat or 'vat' in checkout and checkout['vat']))"
+            >
+                <!-- Once documents are issued the VAT can't change, so neither can the customer type -->
+                <t
+                    t-set="b2x_locked"
+                    t-value="'vat' in checkout and checkout['vat'] and not can_edit_vat"
+                />
+                <!-- checkout is the posted form (after a validation error),
+                     an empty dict (new address) or the partner record (edit) -->
+                <t
+                    t-set="b2x_is_company"
+                    t-value="b2x_locked or (checkout.get('company_type') if 'submitted' in checkout else ('company_type' in checkout and checkout['company_type'] == 'company' or 'commercial_company_name' in checkout and checkout['commercial_company_name'] or 'vat' in checkout and checkout['vat']))"
+                />
+                <div class="w-100" />
+                <div id="b2x_checkbox" class="col-lg-12 mb-3">
+                    <div class="form-check">
+                        <input
+                            type="checkbox"
+                            id="b2x_company_type"
+                            class="form-check-input"
+                            name="company_type"
+                            t-att-checked="'checked' if b2x_is_company else None"
+                            t-att-disabled="'disabled' if b2x_locked else None"
+                        />
+                        <label
+                            class="form-check-label"
+                            for="b2x_company_type"
+                        >I'm a Company</label>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <!-- Electronic invoice fields, only for Italian companies (see JS) -->
+        <xpath expr="//div[contains(@t-attf-class, 'div_vat')]" position="after">
+            <div
+                t-attf-class="mb-3 #{error.get('codice_destinatario') and 'o_has_error' or ''} col-lg-6 div_codice_destinatario"
+            >
+                <label
+                    class="col-form-label fw-normal"
+                    for="codice_destinatario"
+                >Addressee Code (SDI)</label>
+                <input
+                    type="text"
+                    name="codice_destinatario"
+                    maxlength="7"
+                    t-attf-class="form-control #{error.get('codice_destinatario') and 'is-invalid' or ''}"
+                    t-att-value="'codice_destinatario' in checkout and checkout['codice_destinatario'] or '0000000'"
+                />
+                <small
+                    class="form-text text-muted"
+                >If you don't have an Addressee Code, leave 0000000 and enter your PEC.</small>
+            </div>
+            <div
+                t-attf-class="mb-3 #{error.get('pec_destinatario') and 'o_has_error' or ''} col-lg-6 div_pec_destinatario"
+            >
+                <label
+                    class="col-form-label fw-normal label-optional"
+                    for="pec_destinatario"
+                >PEC</label>
+                <input
+                    type="email"
+                    name="pec_destinatario"
+                    t-attf-class="form-control #{error.get('pec_destinatario') and 'is-invalid' or ''}"
+                    t-att-value="'pec_destinatario' in checkout and checkout['pec_destinatario']"
+                />
+            </div>
+        </xpath>
+        <!-- Country code on each option, to know when Italy is selected -->
+        <xpath expr="//select[@name='country_id']//option[@t-att-value='c.id']" position="attributes">
+            <attribute name="t-att-data-code">c.code</attribute>
+        </xpath>
     </template>
-  </data>
 </odoo>

@@ -1,47 +1,127 @@
-odoo.define("l10n_it_website_sale_checkout_b2x", function(require) {
-    "use strict";
-    require("web.core");
+/** @odoo-module **/
+/* Copyright 2023 Alberto Carollo
+ * License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
 
-    $(document).ready(function() {
-        var $container_div = $(".oe_website_sale");
-        var $b2x_input = $container_div.find(
-            "input[name='company_type'][type='checkbox']"
-        );
-        var $div_fiscalcode = $container_div.find("#div_fiscalcode");
-        var $div_company_name = $container_div.find("input[name='company_name']").parent();
-        var $div_vat = $container_div.find(".div_vat");
-        var $field_required = $container_div.find("input[name='field_required']");
+import publicWidget from "web.public.widget";
 
-        var compute_b2x_fields_visibility = function() {
-            if (
-                $b2x_input[0] !== null &&
-                $b2x_input[0] !== undefined
-            ) {
-                if ($b2x_input[0].checked) {
-                    /* set the fiscal code as optional */
-                    if($field_required[0].value.includes("fiscalcode")){
-                        $field_required[0].value = $field_required[0].value.replace(",fiscalcode","")
-                    }
-                    /* set vat id as mandatory */
-                    $field_required[0].value = $field_required[0].value.concat(",vat");
+const COMPANY_FIELDS = ["company_name", "vat"];
+const PERSON_FIELDS = ["fiscalcode"];
+// Electronic invoice fields of Italian companies: field name => required
+const EINVOICE_FIELDS = {codice_destinatario: true, pec_destinatario: false};
 
-                    $div_fiscalcode.hide();
-                    $div_company_name.show();
-                    $div_vat.show();
-                } else {
-                    $div_fiscalcode.show();
-                    /* Set the fiscal code as mandatory */
-                    $field_required[0].value = $field_required[0].value.concat(",fiscalcode");
-                    /* set vat id as optional */
-                    if($field_required[0].value.includes("vat")){
-                        $field_required[0].value = $field_required[0].value.replace(",vat","")
-                    }
-                    $div_company_name.hide();
-                    $div_vat.hide();
-                }
-            }
-        };
-        compute_b2x_fields_visibility();
-        $b2x_input.change(compute_b2x_fields_visibility);
-    });
+publicWidget.registry.L10nItWebsiteSaleCheckoutB2x = publicWidget.Widget.extend({
+    selector: ".oe_website_sale form.checkout_autoformat",
+    events: {
+        "change input[name='company_type']": "_onChangeCompanyType",
+        "change select[name='country_id']": "_onChangeCountry",
+    },
+
+    /**
+     * @override
+     */
+    start() {
+        this.b2xInput = this.el.querySelector("input[name='company_type']");
+        if (this.b2xInput) {
+            this._updateB2xFields();
+        }
+        return this._super(...arguments);
+    },
+
+    //--------------------------------------------------------------------------
+    // Private
+    //--------------------------------------------------------------------------
+
+    /**
+     * Show the fields of the selected customer type and make them mandatory;
+     * hide the other ones and disable them, so that they are not posted.
+     *
+     * @private
+     */
+    _updateB2xFields() {
+        const isCompany = this.b2xInput.checked;
+        for (const fieldName of COMPANY_FIELDS) {
+            this._toggleField(fieldName, isCompany);
+        }
+        for (const fieldName of PERSON_FIELDS) {
+            this._toggleField(fieldName, !isCompany);
+        }
+        const isItalianCompany = isCompany && this._isItalySelected();
+        for (const [fieldName, required] of Object.entries(EINVOICE_FIELDS)) {
+            this._toggleField(fieldName, isItalianCompany, isItalianCompany && required);
+        }
+    },
+
+    /**
+     * @private
+     * @returns {Boolean}
+     */
+    _isItalySelected() {
+        const select = this.el.querySelector("select[name='country_id']");
+        const option = select && select.selectedOptions[0];
+        return Boolean(option) && (option.dataset.code || "").toUpperCase() === "IT";
+    },
+
+    /**
+     * @private
+     * @param {String} fieldName
+     * @param {Boolean} active
+     * @param {Boolean} [required=active]
+     */
+    _toggleField(fieldName, active, required = active) {
+        const input = this.el.querySelector(`[name='${fieldName}']`);
+        if (!input) {
+            return;
+        }
+        input.parentElement.classList.toggle("d-none", !active);
+        input.disabled = !active;
+        const label = this.el.querySelector(`label[for='${fieldName}']`);
+        if (label) {
+            label.classList.toggle("label-optional", !required);
+        }
+        this._setRequired(fieldName, required);
+    },
+
+    /**
+     * Add or remove a field from the comma separated list of
+     * mandatory fields checked by website_sale on submit.
+     *
+     * @private
+     * @param {String} fieldName
+     * @param {Boolean} required
+     */
+    _setRequired(fieldName, required) {
+        const requiredInput = this.el.querySelector("input[name='field_required']");
+        if (!requiredInput) {
+            return;
+        }
+        const fields = new Set(requiredInput.value.split(",").filter(Boolean));
+        if (required) {
+            fields.add(fieldName);
+        } else {
+            fields.delete(fieldName);
+        }
+        requiredInput.value = [...fields].join(",");
+    },
+
+    //--------------------------------------------------------------------------
+    // Handlers
+    //--------------------------------------------------------------------------
+
+    /**
+     * @private
+     */
+    _onChangeCompanyType() {
+        this._updateB2xFields();
+    },
+
+    /**
+     * @private
+     */
+    _onChangeCountry() {
+        if (this.b2xInput) {
+            this._updateB2xFields();
+        }
+    },
 });
+
+export default publicWidget.registry.L10nItWebsiteSaleCheckoutB2x;

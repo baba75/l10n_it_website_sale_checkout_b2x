@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 14.0-20230116\n"
+"Project-Id-Version: Odoo Server 16.0-20260918\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-27 12:33+0000\n"
-"PO-Revision-Date: 2024-08-02 15:12+0200\n"
+"POT-Creation-Date: 2026-10-29 13:38+0000\n"
+"PO-Revision-Date: 2026-10-29 13:38+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: it\n"
@@ -15,9 +15,56 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.4\n"
+
+#. module: l10n_it_website_sale_checkout_b2x
+#: model_terms:ir.ui.view,arch_db:l10n_it_website_sale_checkout_b2x.address
+msgid ""
+"<small class=\"form-text text-muted\">If you don't have an Addressee Code, "
+"leave 0000000 and enter your PEC.</small>"
+msgstr ""
+"<small class=\"form-text text-muted\">Se non hai un Codice Destinatario, "
+"lascia 0000000 e inserisci la tua PEC.</small>"
+
+#. module: l10n_it_website_sale_checkout_b2x
+#: model_terms:ir.ui.view,arch_db:l10n_it_website_sale_checkout_b2x.address
+msgid "Addressee Code (SDI)"
+msgstr "Codice Destinatario (SDI)"
 
 #. module: l10n_it_website_sale_checkout_b2x
 #: model_terms:ir.ui.view,arch_db:l10n_it_website_sale_checkout_b2x.address
 msgid "I'm a Company"
 msgstr "Sono un’Azienda"
+
+#. module: l10n_it_website_sale_checkout_b2x
+#. odoo-python
+#: code:addons/l10n_it_website_sale_checkout_b2x/controllers/main.py:0
+#: code:addons/l10n_it_website_sale_checkout_b2x/controllers/main.py:0
+#, python-format
+msgid "Invalid PEC! Please enter a valid email address."
+msgstr "PEC non valida! Inserisci un indirizzo email valido."
+
+#. module: l10n_it_website_sale_checkout_b2x
+#: model_terms:ir.ui.view,arch_db:l10n_it_website_sale_checkout_b2x.address
+msgid "PEC"
+msgstr "PEC"
+
+#. module: l10n_it_website_sale_checkout_b2x
+#. odoo-python
+#: code:addons/l10n_it_website_sale_checkout_b2x/controllers/main.py:0
+#: code:addons/l10n_it_website_sale_checkout_b2x/controllers/main.py:0
+#, python-format
+msgid "The Addressee Code (SDI) must be 7 characters long."
+msgstr "Il Codice Destinatario (SDI) deve essere lungo 7 caratteri."
+
+#. module: l10n_it_website_sale_checkout_b2x
+#. odoo-python
+#: code:addons/l10n_it_website_sale_checkout_b2x/controllers/main.py:0
+#: code:addons/l10n_it_website_sale_checkout_b2x/controllers/main.py:0
+#, python-format
+msgid "To receive the invoice by PEC, the Addressee Code (SDI) must be %s."
+msgstr "Per ricevere la fattura tramite PEC, il Codice Destinatario (SDI) deve essere %s."
+
+#. module: l10n_it_website_sale_checkout_b2x
+#: model:ir.model,name:l10n_it_website_sale_checkout_b2x.model_website
+msgid "Website"
+msgstr "Sito web"
